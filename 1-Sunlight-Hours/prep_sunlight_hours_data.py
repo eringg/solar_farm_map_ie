@@ -10,6 +10,7 @@ import geopandas as gpd
 import numpy as np
 import rasterio
 from rasterio.warp import calculate_default_transform, reproject, Resampling
+import calendar
 
 # Download dataset
 dataset = "sis-energy-pecd"
@@ -71,6 +72,7 @@ print(monthly_avg_df.shape)
 world = gpd.read_file("https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_50m_admin_0_countries.geojson")
 ireland = world[world['ADMIN'] == 'Ireland']
 
+
 # Plotting heatmaps per month (optional visualization)
 for month in monthly_avg_df['month'].unique():
     month_data = monthly_avg_df[monthly_avg_df['month'] == month]
@@ -85,12 +87,19 @@ for month in monthly_avg_df['month'].unique():
     pcm = ax.pcolormesh(X, Y, grid.values, cmap='viridis', shading='auto')
     ireland.boundary.plot(ax=ax, edgecolor='black', linewidth=1)
     plt.colorbar(pcm, ax=ax, label='Solar Capacity Factor')
-    ax.set_title(f'Solar Capacity Factor – Month {month}')
-    ax.set_xlabel('Longitude')
-    ax.set_ylabel('Latitude')
+
+    # Convert month number to name for the title
+    month_name = calendar.month_name[month]
+    ax.set_title(f'Solar Capacity Factor – {month_name}', fontsize=20, fontweight='bold', color='navy',fontfamily='Georgia')
+
+    # Remove axis borders, ticks, and labels
+    ax.axis('off')
+
+    # Optional: Keep map bounds
     ax.set_xlim([-10.5, -5.5])
     ax.set_ylim([51, 55.5])
-    plt.tight_layout()
+
+    #plt.tight_layout()
     plt.show()
 
 # Define target CRS

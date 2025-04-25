@@ -2,6 +2,7 @@ import rasterio
 import numpy as np
 import matplotlib.pyplot as plt
 from rasterio.enums import Resampling
+from matplotlib import colors
 
 # Load DEM
 dem_path = "1-DEM//dem_irl_itm-1.tif"
@@ -22,13 +23,18 @@ slope = np.degrees(np.arctan(np.sqrt(x**2 + y**2)))
 aspect = np.degrees(np.arctan2(-x, y))
 aspect = np.mod(aspect + 360, 360)  # Normalize between 0-360
 
-# Optional: Visualize the original DEM
+
+# Use PowerNorm to emphasize lower values
+norm = colors.PowerNorm(gamma=0.4)  # try gamma between 0.3 - 0.6
+
 plt.figure(figsize=(10, 6))
-masked_dem = np.where(dem <= 0, np.nan, dem)  # Mask sea-level or below if needed
-plt.imshow(masked_dem, cmap="terrain")
+plt.imshow(masked_dem, cmap="terrain", norm=norm)
 plt.colorbar(label="Elevation (m)")
-plt.title("Original DEM")
+plt.title("Original Digital Elevation Model")
+plt.axis("off")  # Turns off x/y axis lines and ticks
 plt.show()
+
+
 
 # Create masks
 south_facing = (aspect >= 135) & (aspect <= 225)
@@ -46,7 +52,8 @@ binary_filtered = np.where(desired_mask, 1, 0).astype(np.uint8)
 plt.figure(figsize=(10, 6))
 plt.imshow(binary_filtered, cmap="gray")
 plt.colorbar(label="1 = Yes, 0 = No")
-plt.title("South-facing Slopes or Flat Land (Binary)")
+plt.title("South-facing Slopes or Flat Land Indicator")
+plt.axis("off")  # Turns off x/y axis lines and ticks
 plt.show()
 
 # Define output path
@@ -82,7 +89,6 @@ with rasterio.open(reimport_path) as reimp_src:
 print("Reimported Raster CRS:", reimp_crs)
 
 
-# Get unique values and counts
 # Get unique values and counts
 unique_vals, counts = np.unique(reimp_data, return_counts=True)
 for val, count in zip(unique_vals, counts):
